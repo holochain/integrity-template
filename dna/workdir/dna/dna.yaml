@@ -4,9 +4,9 @@ name: mydna1
 uuid: 00000000-0000-0000-0000-000000000000
 properties: ~
 zomes:
-  - name: mydna1-core
-    bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-core.wasm
-    type: integrity
-  - name: mydna1-accessor1
-    bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-accessor1.wasm
-    type:accessor
+  integrity:
+    - name: mydna1-core
+      bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-core.wasm
+  accessor:
+    - name: mydna1-zome1
+      bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-zome1.wasm
