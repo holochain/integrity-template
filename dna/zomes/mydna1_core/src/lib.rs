@@ -10,6 +10,8 @@ entry_defs![MyEntry1::entry_def(), MyEntry2::entry_def()];
 ////////////////////////////////////////////////////////////////////////////////
 // Entry struct definitions with necessary impls
 ////////////////////////////////////////////////////////////////////////////////
+
+// OLD
 #[hdk_entry(id = "my_entry1")]
 #[derive(Clone)]
 pub struct MyEntry1 {
@@ -27,21 +29,31 @@ impl MyEntry2 {
     }
 }
 
+// NEW
+#[hdk_entry]
+pub enum EntryTypes {
+    #[MyEntry1]
+    MyEntry1,
+    MyEntry2
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Link Types
 ////////////////////////////////////////////////////////////////////////////////
 
-pub enum MyLink1 {
+#[hdk_link_type]
+pub enum LinkTypes {
     Fish = 0,
     Dog,
     Cow
 }
-impl From<LinkType> for MyLink1 {
+impl From<LinkType> for LinkTypes {
     fn from(x: LinkType) -> Self {
         match x.0 {
-            0 => MyLink1::Fish,
-            1 => MyLink1::Dog,
-            2 => MyLink1::Cow,
+            0 => LinkTypes::Fish,
+            1 => LinkTypes::Dog,
+            2 => LinkTypes::Cow,
         }
     }
 }
@@ -59,7 +71,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 Header::AgentValidationPkg(_) => todo!(),
                 Header::InitZomesComplete(_) => todo!(),
                 Header::CreateLink(create) => match create.link_type.into() {
-                    MyLink1::Fish => todo!(),
+                    LinkTypes::Fish => todo!(),
                     _ => {}
                 },
                 Header::DeleteLink(_) => todo!(),
@@ -69,7 +81,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryType::AgentPubKey => todo!(),
                     EntryType::App(app_entry_type) => {
                         match info.entry_defs.get(app_entry_type.id.index()).map(|entry_def| entry_def.id.to_string()) {
-                            "something" => _
+                            "my_entry1" => _
                         }
                     }
                     EntryType::CapClaim => todo!(),
@@ -82,7 +94,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         }
         Op::StoreEntry { header, .. } => {
             match header.hashed.content.entry_type() {
-                entry_def_index!(String::from("somethings")) => todo!(),
+                entry_def_index!(String::from("my_entry1")) => todo!(),
                 _ => {}
             }
             Ok(ValidateCallbackResult::Valid)
