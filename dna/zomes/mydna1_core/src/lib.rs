@@ -5,44 +5,49 @@ pub use hdk::prelude::*;
 ////////////////////////////////////////////////////////////////////////////////
 // Entry declarations
 ////////////////////////////////////////////////////////////////////////////////
-entry_defs![MyEntry1::entry_def(), MyEntry2::entry_def()];
+/// old entry_defs! macro should be able to be deleted because the 
+/// `hdk_entry` proc macro will create the `EntryTypes` enum
+/// entry_defs![MyThing1::entry_def(), MyThing2::entry_def()];
 
 ////////////////////////////////////////////////////////////////////////////////
 // Entry struct definitions with necessary impls
 ////////////////////////////////////////////////////////////////////////////////
 
 // OLD
-#[hdk_entry(id = "my_entry1")]
+#[hdk_entry]
 #[derive(Clone)]
-pub struct MyEntry1 {
+pub struct MyThing1 {
     pub thing1: String,
 }
 
-#[hdk_entry(id = "my_entry2")]
+#[hdk_entry]
 #[derive(Clone)]
-pub struct MyEntry2 {
+pub struct MyThing2 {
     pub thing1: String,
 }
-impl MyEntry2 {
+impl MyThing2 {
     pub fn some_fn() {
         debug!("Do something")
     }
 }
 
-// NEW
-#[hdk_entry]
-pub enum EntryTypes {
-    #[MyEntry1]
-    MyEntry1,
-    MyEntry2
-}
+// entry_types! macro generates the enum below and impls to go in the opposite direction
+entry_types!([MyThing1, MyThing2]);
+
+// pub enum EntryTypes {
+//     #[MyThing1]
+//     MyEntry1 = 0,
+//     #[MyThing2]
+//     MyEntry2
+// }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Link Types
 ////////////////////////////////////////////////////////////////////////////////
 
-#[hdk_link_type]
+// link_types! macro generates the enum below and impls to go in the opposite direction
+link_types!([Fish, Dog, Cow])
 pub enum LinkTypes {
     Fish = 0,
     Dog,
@@ -63,6 +68,52 @@ impl From<LinkType> for LinkTypes {
 
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
+ 
+    match op {
+        // Validation for entries
+        Op::StoreEntry { header, entry_type, .. } => {
+          Ok(ValidateCallbackResult::Valid)
+        },
+        Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Invalid(
+            "updating entries isn't valid".to_string(),
+        )),
+        Op::RegisterDelete { .. } => Ok(ValidateCallbackResult::Invalid(
+            "deleting entries isn't valid".to_string(),
+        )),
+
+        // Validation for links
+        Op::RegisterCreateLink { create_link: _, link_type: _ } => Ok(ValidateCallbackResult::Valid),
+        Op::RegisterDeleteLink { delete_link: _, create_link: _, link_type: _ } => Ok(ValidateCallbackResult::Invalid(
+            "deleting links isn't valid".to_string(),
+        )),
+
+        // Validation for elements based on header type
+        Op::StoreElement { element } => {
+            match element.header() {
+                Header::AgentKey(_) => todo!(),
+                Header::Create(create) => match create.app_entry_type {
+                    EntryTypes::Fish => todo!(),
+                    EntryTypes::Dog => todo!(),
+                    EntryTypes::Cow => todo!(),
+                },
+                Header::Update(_) => todo!(),
+                Header::Delete(_) => todo!(),
+                Header::CreateLink(_) => todo!(),
+                Header::DeleteLink(_) => todo!(),
+                Header::OpenChain(_) => todo!(),
+                Header::CloseChain(_) => todo!(),
+                Header::AgentValidationPkg(_)=>todo!(),
+                Header::InitZomesComplete(_)=>todo!(),
+                Header::Dna(_)=>todo!(),
+            };
+            Ok(ValidateCallbackResult::Valid)
+        },
+
+        // Chain structure validation
+        Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
+    }
+
+    // this is what we currently have to do
     let info = zome_info()?;
     match op {
         Op::StoreElement { element } => {
