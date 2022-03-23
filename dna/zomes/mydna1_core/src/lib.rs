@@ -71,7 +71,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
  
     match op {
         // Validation for entries
-        Op::StoreEntry { header, entry_type, .. } => {
+        Op::StoreEntry { header, app_entry_type, .. } => {
+            match app_entry_type {
+                EntryTypes::MyThing1 => _,
+                EntryTypes::MyThing2 => _,                
+            }
           Ok(ValidateCallbackResult::Valid)
         },
         Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Invalid(
@@ -90,20 +94,32 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         // Validation for elements based on header type
         Op::StoreElement { element } => {
             match element.header() {
+                // Validate agent joining the network
                 Header::AgentKey(_) => todo!(),
+
+                // Validate entries
                 Header::Create(create) => match create.app_entry_type {
-                    EntryTypes::Fish => todo!(),
-                    EntryTypes::Dog => todo!(),
-                    EntryTypes::Cow => todo!(),
+                    EntryTypes::MyThing1 => todo!(),
+                    EntryTypes::MyThing2 => todo!(),
                 },
                 Header::Update(_) => todo!(),
                 Header::Delete(_) => todo!(),
+
+                // Validate Links
                 Header::CreateLink(_) => todo!(),
                 Header::DeleteLink(_) => todo!(),
+
+                // Validation chain migration
                 Header::OpenChain(_) => todo!(),
                 Header::CloseChain(_) => todo!(),
-                Header::AgentValidationPkg(_)=>todo!(),
+
+                // Validate capabilities, rarely used
+                Header::CapGrant() => todo!(), 
+                Header::CapClaim() => todo!(),
+
+                // Validate init and genesis entries, also rarely 
                 Header::InitZomesComplete(_)=>todo!(),
+                Header::AgentValidationPkg(_)=>todo!(), // mostly this will be validated in the process of using it to validate the Agent Key
                 Header::Dna(_)=>todo!(),
             };
             Ok(ValidateCallbackResult::Valid)
@@ -113,7 +129,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
     }
 
-    // this is what we currently have to do
+    // this is what we currently have to do to make things work
     let info = zome_info()?;
     match op {
         Op::StoreElement { element } => {
