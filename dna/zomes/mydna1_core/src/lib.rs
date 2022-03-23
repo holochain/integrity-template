@@ -71,12 +71,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
  
     match op {
         // Validation for entries
-        Op::StoreEntry { header, app_entry_type, .. } => {
-            match app_entry_type {
-                EntryTypes::MyThing1 => _,
-                EntryTypes::MyThing2 => _,                
+        Op::StoreEntry { header, entry_type, .. } => {
+            match entry_type {
+                MyThing1 => todo!(),
+                MyThing2 => todo!(),
             }
-          Ok(ValidateCallbackResult::Valid)
         },
         Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Invalid(
             "updating entries isn't valid".to_string(),
@@ -86,10 +85,22 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         )),
 
         // Validation for links
-        Op::RegisterCreateLink { create_link: _, link_type: _ } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterDeleteLink { delete_link: _, create_link: _, link_type: _ } => Ok(ValidateCallbackResult::Invalid(
-            "deleting links isn't valid".to_string(),
-        )),
+        Op::RegisterCreateLink { create_link: _, link_type: _ } => {
+            match link_type {
+                LinkTypes::Fish => _,
+                LinkTypes::Dog => _,
+                LinkTypes::Cow => _,
+            }
+            Ok(ValidateCallbackResult::Valid)}
+            ,
+        Op::RegisterDeleteLink { delete_link: _, create_link: _, link_type: _ } => {
+            match link_type {
+                LinkTypes::Fish => _,
+                LinkTypes::Dog => _,
+                LinkTypes::Cow => _,
+            }        
+            Ok(ValidateCallbackResult::Valid)
+        },
 
         // Validation for elements based on header type
         Op::StoreElement { element } => {
@@ -125,6 +136,12 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             Ok(ValidateCallbackResult::Valid)
         },
 
+        // Agent joining network validation
+        // this is a new DHT op
+        Op::RegisterAgent { header, agent_pub_key } => {
+            // get validation package and then do stuff
+            Ok(ValidateCallbackResult::Valid)
+        },
         // Chain structure validation
         Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
     }
