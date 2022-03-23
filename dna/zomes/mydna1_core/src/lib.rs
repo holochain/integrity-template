@@ -13,7 +13,6 @@ pub use hdk::prelude::*;
 // Entry struct definitions with necessary impls
 ////////////////////////////////////////////////////////////////////////////////
 
-// OLD
 #[hdk_entry]
 #[derive(Clone)]
 pub struct MyThing1 {
@@ -23,7 +22,7 @@ pub struct MyThing1 {
 #[hdk_entry]
 #[derive(Clone)]
 pub struct MyThing2 {
-    pub thing1: String,
+    pub thing2: String,
 }
 impl MyThing2 {
     pub fn some_fn() {
