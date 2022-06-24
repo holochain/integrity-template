@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::u8;
 
 pub use hdk::prelude::*;
@@ -5,9 +8,10 @@ pub use hdk::prelude::*;
 ////////////////////////////////////////////////////////////////////////////////
 // Entry declarations
 ////////////////////////////////////////////////////////////////////////////////
-/// old entry_defs! macro should be able to be deleted because the 
-/// `hdk_entry` proc macro will create the `EntryTypes` enum
-/// entry_defs![MyThing1::entry_def(), MyThing2::entry_def()];
+// old entry_defs! macro should be able to be deleted because the 
+// `hdk_entry` proc macro will create the `EntryTypes` enum
+
+entry_defs![MyThing1::entry_def(), MyThing2::entry_def()];
 
 ////////////////////////////////////////////////////////////////////////////////
 // Entry struct definitions with necessary impls
@@ -25,13 +29,13 @@ pub struct MyThing2 {
     pub thing2: String,
 }
 impl MyThing2 {
-    pub fn some_fn() {
-        debug!("Do something")
+    pub fn some_fn(&self) -> String {
+        self.thing2.clone()
     }
 }
 
 // entry_types! macro generates the enum below and impls to go in the opposite direction
-entry_types!([MyThing1, MyThing2]);
+/// entry_types!([MyThing1, MyThing2]);
 
 // pub enum EntryTypes {
 //     #[MyThing1]
@@ -46,7 +50,7 @@ entry_types!([MyThing1, MyThing2]);
 ////////////////////////////////////////////////////////////////////////////////
 
 // link_types! macro generates the enum below and impls to go in the opposite direction
-link_types!([Fish, Dog, Cow]);
+/// link_types!([Fish, Dog, Cow]);
 pub enum LinkTypes {
     Fish = 0,
     Dog,
@@ -59,7 +63,7 @@ impl From<LinkType> for LinkTypes {
         match x.0 {
             0 => LinkTypes::Fish,
             1 => LinkTypes::Dog,
-            2 => LinkTypes::Cow,
+            _ => LinkTypes::Cow, // TODO: perhaps TryFrom instead?
         }
     }
 }
@@ -70,7 +74,7 @@ impl From<LinkType> for LinkTypes {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[hdk_extern]
-pub fn genesis_self_check(data: GenesisSelfCheckData) ->  ExternResult<ValidateCallbackResult> {
+pub fn genesis_self_check(_data: GenesisSelfCheckData) ->  ExternResult<ValidateCallbackResult> {
     // TODO
     // check data.dna_def
     // check data.membrane_proof
@@ -84,86 +88,6 @@ pub fn genesis_self_check(data: GenesisSelfCheckData) ->  ExternResult<ValidateC
 
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
- 
-    match op {
-        // Validation for entries
-        Op::StoreEntry { header, entry_type, .. } => {
-            match entry_type {
-                MyThing1 => todo!(),
-                MyThing2 => todo!(),
-            }
-        },
-        Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Invalid(
-            "updating entries isn't valid".to_string(),
-        )),
-        Op::RegisterDelete { .. } => Ok(ValidateCallbackResult::Invalid(
-            "deleting entries isn't valid".to_string(),
-        )),
-
-        // Validation for links
-        Op::RegisterCreateLink { create_link } => {
-            let link_type = create_link.hashed.into_inner();
-            match link_type.into() {
-                LinkTypes::Fish => _,
-                LinkTypes::Dog => _,
-                LinkTypes::Cow => _,
-            }
-            Ok(ValidateCallbackResult::Valid)}
-            ,
-        Op::RegisterDeleteLink { delete_link: _, create_link: _, link_type: _ } => {
-            match link_type {
-                LinkTypes::Fish => _,
-                LinkTypes::Dog => _,
-                LinkTypes::Cow => _,
-            }        
-            Ok(ValidateCallbackResult::Valid)
-        },
-
-        // Validation for elements based on header type
-        Op::StoreElement { element } => {
-            match element.header() {
-                // Validate agent joining the network
-                Header::AgentKey(_) => todo!(),
-
-                // Validate entries
-                Header::Create(create) => match create.app_entry_type {
-                    EntryTypes::MyThing1 => todo!(),
-                    EntryTypes::MyThing2 => todo!(),
-                },
-                Header::Update(_) => todo!(),
-                Header::Delete(_) => todo!(),
-
-                // Validate Links
-                Header::CreateLink(_) => todo!(),
-                Header::DeleteLink(_) => todo!(),
-
-                // Validation chain migration
-                Header::OpenChain(_) => todo!(),
-                Header::CloseChain(_) => todo!(),
-
-                // Validate capabilities, rarely used
-                Header::CapGrant() => todo!(), 
-                Header::CapClaim() => todo!(),
-
-                // Validate init and genesis entries, also rarely 
-                Header::InitZomesComplete(_)=>todo!(),
-                Header::AgentValidationPkg(_)=>todo!(), // mostly this will be validated in the process of using it to validate the Agent Key
-                Header::Dna(_)=>todo!(),
-            };
-            Ok(ValidateCallbackResult::Valid)
-        },
-
-        // Agent joining network validation
-        // this is a new DHT op
-        Op::RegisterAgent { header, agent_pub_key } => {
-            // get validation package and then do stuff
-            Ok(ValidateCallbackResult::Valid)
-        },
-        // Chain structure validation
-        Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
-    }
-
-    // this is what we currently have to do to make things work
     let info = zome_info()?;
     match op {
         Op::StoreElement { element } => {
@@ -180,11 +104,19 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 Header::CloseChain(_) => todo!(),
                 Header::Create(create) => match create.entry_type {
                     EntryType::AgentPubKey => todo!(),
-                    EntryType::App(app_entry_type) => {
-                        match info.entry_defs.get(app_entry_type.id.index()).map(|entry_def| entry_def.id.to_string()) {
-                            "my_entry1" => _
+                    EntryType::App( AppEntryType { id, .. } ) => {
+                        match info.entry_defs.0.get( id.0 as usize ) {
+                            None => return Ok(ValidateCallbackResult::Invalid(format!("failed to find App entry def at index {}", id.0))),
+                            Some(entry_def) => match &entry_def.id {
+                                EntryDefId::App(name) => match name.as_str() {
+                                    "my_entry1" => {},
+                                    other => return Ok(ValidateCallbackResult::Invalid(format!("unrecognized App entry {:?}", other))),
+                                },
+                                EntryDefId::CapClaim => todo!(),
+                                EntryDefId::CapGrant => todo!(),
+                            }
                         }
-                    }
+                    },
                     EntryType::CapClaim => todo!(),
                     EntryType::CapGrant => todo!(),
                 },
@@ -193,17 +125,70 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             }
             Ok(ValidateCallbackResult::Valid)
         }
-        Op::StoreEntry { header, .. } => {
-            match header.hashed.content.entry_type() {
-                entry_def_index!(String::from("my_entry1")) => todo!(),
-                _ => {}
-            }
+
+        Op::StoreEntry {
+            entry: Entry::Agent(_),
+            ..
+        } => Ok(ValidateCallbackResult::Valid),
+
+        Op::StoreEntry {
+            entry,
+            header:
+                SignedHashed {
+                    hashed:
+                        HoloHashed {
+                            content: entry_creation_header, // EntryCreationHeader
+                            ..
+                        },
+                    ..
+                },
+        } => __validate_store_entry(entry, entry_creation_header),
+
+        // Validation for links
+        Op::RegisterCreateLink {
+            create_link:
+                SignedHashed {
+                    hashed:
+                        HoloHashed {
+                            content:
+                                CreateLink {
+                                    link_type, ..
+                                },
+                            ..
+                        },
+                    ..
+                }
+            } => {
+            match link_type.into() {
+                LinkTypes::Fish => {},
+                LinkTypes::Dog => {},
+                LinkTypes::Cow => {},
+            };
             Ok(ValidateCallbackResult::Valid)
-        }
-        Op::RegisterCreateLink { create_link: _ } => Ok(ValidateCallbackResult::Valid),
-        Op::RegisterDeleteLink { create_link: _, .. } => Ok(ValidateCallbackResult::Invalid(
-            "deleting links isn't valid".to_string(),
-        )),
+        },
+        Op::RegisterDeleteLink {
+            delete_link:
+                SignedHashed {
+                    hashed:
+                        HoloHashed {
+                            content: _delete_link, ..
+                        },
+                    ..
+                },
+            create_link:
+                CreateLink {
+                    link_type, ..
+                },
+        } => {
+            match link_type.into() {
+                LinkTypes::Fish => {},
+                LinkTypes::Dog => {},
+                LinkTypes::Cow => {},
+            };
+            Ok(ValidateCallbackResult::Invalid(
+                "deleting links isn't valid".to_string(),
+            ))
+        },
         Op::RegisterUpdate { .. } => Ok(ValidateCallbackResult::Invalid(
             "updating entries isn't valid".to_string(),
         )),
@@ -211,5 +196,45 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             "deleting entries isn't valid".to_string(),
         )),
         Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
+    }
+}
+
+fn __validate_store_entry( entry: Entry, entry_creation_header: EntryCreationHeader ) -> ExternResult<ValidateCallbackResult> {
+
+    lazy_static! {
+	static ref HOW_ZID: ZomeId = zome_info().unwrap().id;
+	static ref MT1_EDI: EntryDefIndex = entry_def_index!(MyThing1).unwrap();
+	static ref MT2_EDI: EntryDefIndex = entry_def_index!(MyThing2).unwrap();
+    };
+
+    match entry_creation_header {
+        EntryCreationHeader::Create( header::Create{entry_type, ..} ) => {
+	    if let EntryType::App(app_entry) = entry_type {
+                if app_entry.id() == *MT1_EDI {
+                    Ok(ValidateCallbackResult::Valid)
+                } else if app_entry.id() == *MT2_EDI {
+                    let mt2: MyThing2 = entry.try_into()?;
+                    match mt2.some_fn().as_str() {
+                        "Do something" => Ok(ValidateCallbackResult::Valid),
+                        something_else => Ok(ValidateCallbackResult::Invalid(
+                            format!("MyThing2 didn't Do something, it did {:?}", something_else)
+                        ))
+                    }
+                } else {
+                    Ok(ValidateCallbackResult::Invalid(
+                        format!("Some other entry_def_index: {:?}", app_entry.id())
+                    ))
+                }
+            } else {
+                Ok(ValidateCallbackResult::Invalid(
+                    format!("Not an App entry_type: {:?}", entry_type)
+                ))
+            }
+        },
+        EntryCreationHeader::Update( header::Update{entry_hash, entry_type, ..} ) => {
+            Ok(ValidateCallbackResult::Invalid(
+                format!("Update not allowed for {:?} at {:?}", entry_type, entry_hash)
+            ))
+        }
     }
 }

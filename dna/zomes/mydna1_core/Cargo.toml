@@ -11,6 +11,7 @@ name = "mydna1_core"
 [dependencies]
 chrono = {version = "0.4", features = ['alloc', 'std']}
 derive_more = "0.99"
-serde = "1.0.123"
-thiserror = "1.0.20"
-hdk = {version = "0.0.125", features = ["encoding"]}
+serde = "1.0"
+thiserror = "1.0"
+lazy_static = "1.4"
+hdk = {version = "0.0.133", features = ["encoding"]}
