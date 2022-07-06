@@ -88,9 +88,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         // Validation for entries
         Op::StoreEntry { action, entry, .. } => {
             match action.into_inner().0.entry_type() {
-                MyThing1 => todo!(),
-                MyThing2 => todo!(),
-                MyThingPrivate => todo!(),
+                EntryTypes::MyThing1 => todo!(),
+                EntryTypes::MyThing2 => todo!(),
+                EntryTypes::MyThingPrivate => todo!(),
             }
         },
         Op::RegisterUpdate { .. } => return Ok(ValidateCallbackResult::Invalid(
@@ -125,10 +125,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
 
                 // Validate entries
                 Action::Create(create) => match create.entry_type {
-                    Doggy => todo!(),
-                    MyThing1 => todo!(),
-                    MyThing2 => todo!(),
-                    MyThingPrivate => todo!(),
+                    EntryTypes::MyThing1 => todo!(),
+                    EntryTypes::MyThing2 => todo!(),
+                    EntryTypes::MyThingPrivate => todo!(),
                 },
                 Action::Update(_) => todo!(),
                 Action::Delete(_) => todo!(),
