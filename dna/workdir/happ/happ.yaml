@@ -1,14 +1,14 @@
 ---
 manifest_version: "1"
-name: how
+name: mydna1
 description: ~
 roles:
-  - id: how
+  - id: mydna1
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "../dna/how.dna"
+      bundled: "../dna/mydna1.dna"
       properties: ~
       uuid: ~
       version: ~
