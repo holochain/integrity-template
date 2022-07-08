@@ -86,11 +86,30 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
  
     match op {
         // Validation for entries
-        Op::StoreEntry { action, entry, .. } => {
-            match action.into_inner().0.entry_type() {
-                EntryTypes::MyThing1 => todo!(),
-                EntryTypes::MyThing2 => todo!(),
-                EntryTypes::MyThingPrivate => todo!(),
+        Op::StoreEntry {
+            action:
+                SignedHashed {
+                    hashed: HoloHashed {
+                        content: action, ..
+                    },
+                    ..
+                },
+            entry,
+        } => {
+            if let Some(AppEntryType {
+                id: entry_def_index,
+                zome_id,
+                ..
+            }) = action.app_entry_type()
+            {
+                match EntryTypes::deserialize_from_type(*zome_id, *entry_def_index, &entry)? {
+                    Some(EntryTypes::MyThing1(_my_thing1)) => (),
+                    Some(EntryTypes::MyThing2(_my_thing2)) => (),
+                    Some(EntryTypes::MyThingPrivate(_my_thing_private)) => (),
+                    None => return Ok(ValidateCallbackResult::Invalid(
+                        "expected app entry type, got none".to_string(),
+                    )),
+                }
             }
         },
         Op::RegisterUpdate { .. } => return Ok(ValidateCallbackResult::Invalid(
@@ -104,16 +123,16 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         Op::RegisterCreateLink { create_link } => {
             let (create_link, _) = create_link.hashed.into_inner();
             match create_link.link_type.into() {
-                LinkTypes::Fish => todo!(),
-                LinkTypes::Dog => todo!(),
-                LinkTypes::Cow => todo!(),
+                LinkTypes::Fish => (),
+                LinkTypes::Dog => (),
+                LinkTypes::Cow => (),
             }
         },
         Op::RegisterDeleteLink { delete_link: _, create_link} => {
             match create_link.link_type.into() {
-                LinkTypes::Fish => todo!(),
-                LinkTypes::Dog => todo!(),
-                LinkTypes::Cow => todo!(),
+                LinkTypes::Fish => (),
+                LinkTypes::Dog => (),
+                LinkTypes::Cow => (),
             }        
         },
 
@@ -125,9 +144,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
 
                 // Validate entries
                 Action::Create(create) => match create.entry_type {
-                    EntryTypes::MyThing1 => todo!(),
-                    EntryTypes::MyThing2 => todo!(),
-                    EntryTypes::MyThingPrivate => todo!(),
+                    EntryTypes::MyThing1(_) => todo!(),
+                    EntryTypes::MyThing2(_) => todo!(),
+                    EntryTypes::MyThingPrivate(_) => todo!(),
                 },
                 Action::Update(_) => todo!(),
                 Action::Delete(_) => todo!(),
