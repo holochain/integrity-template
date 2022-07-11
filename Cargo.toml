@@ -1,9 +1,8 @@
 [workspace]
-resolver = "2"
 members = [
-  "dna/zomes/mydna1_core",
-  "dna/zomes/mydna1_zome1"
-  ]
+  "dna/zomes/coordinator",
+  "dna/zomes/integrity",
+]
 
 [profile.dev]
 opt-level = "z"

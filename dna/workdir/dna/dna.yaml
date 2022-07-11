@@ -1,16 +1,14 @@
 ---
 manifest_version: "1"
-name: mydna1
+name: dna
 integrity:
   uid: 00000000-0000-0000-0000-000000000000
   properties: ~
   origin_time: 2022-02-11T23:05:19.470323Z
   zomes:
-    - name: mydna1_core
-      bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-core.wasm
+    - name: integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/integrity.wasm
 coordinator:
   zomes:
-    - name: mydna1_zome1
-      bundled: ../../../target/wasm32-unknown-unknown/release/mydna1-zome1.wasm
-      dependencies:
-        - name: mydna1_core
+    - name: coordinator
+      bundled: ../../../target/wasm32-unknown-unknown/release/coordinator.wasm
