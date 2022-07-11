@@ -1,15 +1,31 @@
 import { Scenario } from "@holochain/tryorama";
+import { ActionHash } from "@holochain/client";
 import test from "tape";
 import { FIXTURE_DNA_URL } from "./dna/workdir/dna/index.js";
 
-test("Validate", async (t) => {
+interface HolochainError {
+    type: string;
+    data: { type: string, data: string };
+}
+
+test("Validate store entry - creating an entry with valid text should succeed", async (t) => {
+    const scenario = new Scenario();
+    const player = await scenario.addPlayerWithHapp([{ path: FIXTURE_DNA_URL.pathname }]);
+    const actionHash: ActionHash = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "valid text" });
+    t.equal(actionHash.length, 39, "create entry returns a valid action hash");
+    await scenario.cleanUp();
+});
+
+test("Validate store entry - creating an entry with invalid text should fail", async (t) => {
     const scenario = new Scenario();
     try {
         const player = await scenario.addPlayerWithHapp([{ path: FIXTURE_DNA_URL.pathname }]);
-        const response = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create" });
-        console.log('response', response);
+        const l = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "invalid text 1" });
+        console.log('e', l);
+        t.fail();
     } catch (e) {
-        console.error("eerer", e);
+        const hcError = e as HolochainError;
+        t.ok(hcError.data.data.includes("invalid thing1"));
     }
-    await scenario.shutDown();
-})
+    await scenario.cleanUp();
+});

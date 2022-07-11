@@ -96,16 +96,16 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             .map(|AppEntryType { id, zome_id, .. }| (zome_id, id))
             .map_or(Ok(ValidateCallbackResult::Valid), |(zome_id, id)| {
                 match EntryTypes::deserialize_from_type(*zome_id, *id, &entry)? {
-                    Some(EntryTypes::MyThing1(my_thing1)) if my_thing1.thing1 == "Banana" => {
-                        Ok(ValidateCallbackResult::Invalid("No Bananas!".to_string()))
+                    Some(EntryTypes::MyThing1(my_thing1)) if my_thing1.thing1 == "invalid text 1" => {
+                        Ok(ValidateCallbackResult::Invalid("invalid thing1".to_string()))
                     }
-                    Some(EntryTypes::MyThing2(my_thing2)) if my_thing2.thing2 == "Carrot" => {
-                        Ok(ValidateCallbackResult::Invalid("Carrots no".to_string()))
+                    Some(EntryTypes::MyThing2(my_thing2)) if my_thing2.thing2 == "invalid text 2" => {
+                        Ok(ValidateCallbackResult::Invalid("invalid thing2".to_string()))
                     }
                     _ => Ok(ValidateCallbackResult::Valid),
                 }
             }),
-        _ => Ok(ValidateCallbackResult::Invalid("no way hosay".to_string())),
+        _ => Ok(ValidateCallbackResult::Valid)
     }
 
     //     Op::RegisterUpdate { .. } => {
