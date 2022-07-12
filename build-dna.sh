@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd dna/zomes/integrity
 cargo build --release --target wasm32-unknown-unknown
