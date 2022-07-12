@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 use holochain_deterministic_integrity::prelude::*;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,40 +108,58 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     _ => Ok(ValidateCallbackResult::Valid),
                 }
             }),
-        // Validation for records based on action type
-        Op::StoreRecord { record } => {
-            match record.action() {
-                // Validate agent joining the network
-                Action::AgentValidationPkg(_) => todo!(),
-
-                // Validate entries
-                Action::Create(_create) => { //match create.into_action().into_entry_data() {
-                    // EntryTypes::MyThing1 => todo!(),
-                    // EntryTypes::MyThing2 => todo!(),
-                    // EntryTypes::MyThingPrivate => todo!(),
-                    todo!()
-                },
-                Action::Update(_) => todo!(),
-                Action::Delete(_) => todo!(),
-
-                // Validate Links
-                Action::CreateLink(_) => todo!(),
-                Action::DeleteLink(_) => todo!(),
-
-                // Validation chain migration
-                Action::OpenChain(_) => todo!(),
-                Action::CloseChain(_) => todo!(),
-
-                // Validate capabilities, rarely used
-                // Doesn't exist?!
-                // Action::CapClaim() => todo!(),
-
-                // Validate init and genesis entries, also rarely
-                Action::InitZomesComplete(_) => todo!(),
-                // Action::AgentValidationPkg(_) => todo!(), // mostly this will be validated in the process of using it to validate the Agent Key
-                Action::Dna(_) => todo!(),
-            };
+            // Validation for records based on action type
+            Op::StoreRecord { record } => {
+                match record
+                .action()
+                .entry_type()
+                .and_then(|et| match et {
+                    EntryType::App(AppEntryType { id, zome_id, .. }) => Some((zome_id, id)),
+                    _ => None,
+                }) {
+                Some((zome_id, id)) => {
+                    match EntryTypes::deserialize_from_type(
+                        *zome_id,
+                        *id,
+                        &record.entry.to_app_option().unwrap().unwrap(),
+                    ) {
+                        Ok(Some(EntryTypes::MyThing1(_thing))) => Ok(ValidateCallbackResult::Valid),
+                        _ => Ok(ValidateCallbackResult::Valid),
+                    }
+                }
+                None => Ok(ValidateCallbackResult::Valid),
+            }
         }
+        // Op::StoreRecord { record } => {
+        //     match record.action() {
+        //         // Validate agent joining the network
+        //         Action::AgentValidationPkg(_) => todo!(),
+
+        //         // Validate entries
+        //         Action::Create(_create) => match _create. {
+
+        //         },
+        //         Action::Update(_) => todo!(),
+        //         Action::Delete(_) => todo!(),
+
+        //         // Validate Links
+        //         Action::CreateLink(_) => todo!(),
+        //         Action::DeleteLink(_) => todo!(),
+
+        //         // Validation chain migration
+        //         Action::OpenChain(_) => todo!(),
+        //         Action::CloseChain(_) => todo!(),
+
+        //         // Validate capabilities, rarely used
+        //         // Doesn't exist?!
+        //         // Action::CapClaim() => todo!(),
+
+        //         // Validate init and genesis entries, also rarely
+        //         Action::InitZomesComplete(_) => todo!(),
+        //         // Action::AgentValidationPkg(_) => todo!(), // mostly this will be validated in the process of using it to validate the Agent Key
+        //         Action::Dna(_) => todo!(),
+        //     };
+        // }
         Op::RegisterUpdate { .. } => {
             return Ok(ValidateCallbackResult::Invalid(
                 "updating entries isn't valid".to_string(),
