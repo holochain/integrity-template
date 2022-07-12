@@ -29,3 +29,10 @@ test("Validate store entry - creating an entry with invalid text should fail", a
     }
     await scenario.cleanUp();
 });
+
+// test("Validate register update", async (t) => {
+//     const scenario = new Scenario();
+//     const player = await scenario.addPlayerWithHapp([{ path: FIXTURE_DNA_URL.pathname }]);
+//     const actionHash: ActionHash = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "valid text" });
+//     await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: {} });
+// });

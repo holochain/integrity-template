@@ -108,28 +108,25 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     _ => Ok(ValidateCallbackResult::Valid),
                 }
             }),
-            // Validation for records based on action type
-            Op::StoreRecord { record } => {
-                match record
-                .action()
-                .entry_type()
-                .and_then(|et| match et {
-                    EntryType::App(AppEntryType { id, zome_id, .. }) => Some((zome_id, id)),
-                    _ => None,
-                }) {
-                Some((zome_id, id)) => {
-                    match EntryTypes::deserialize_from_type(
-                        *zome_id,
-                        *id,
-                        &record.entry.to_app_option().unwrap().unwrap(),
-                    ) {
-                        Ok(Some(EntryTypes::MyThing1(_thing))) => Ok(ValidateCallbackResult::Valid),
-                        _ => Ok(ValidateCallbackResult::Valid),
-                    }
-                }
-                None => Ok(ValidateCallbackResult::Valid),
-            }
-        }
+        // Validation for records based on action type
+        // Op::StoreRecord { record } => {
+        //     match record.action().entry_type().and_then(|et| match et {
+        //         EntryType::App(AppEntryType { id, zome_id, .. }) => Some((zome_id, id)),
+        //         _ => None,
+        //     }) {
+        //         Some((zome_id, id)) => {
+        //             match EntryTypes::deserialize_from_type(
+        //                 *zome_id,
+        //                 *id,
+        //                 &record.entry.to_app_option().unwrap().unwrap(),
+        //             ) {
+        //                 Ok(Some(EntryTypes::MyThing1(_thing))) => Ok(ValidateCallbackResult::Valid),
+        //                 _ => Ok(ValidateCallbackResult::Valid),
+        //             }
+        //         }
+        //         None => Ok(ValidateCallbackResult::Valid),
+        //     }
+        // }
         // Op::StoreRecord { record } => {
         //     match record.action() {
         //         // Validate agent joining the network
@@ -174,20 +171,20 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         Op::RegisterCreateLink { create_link } => {
             let (create_link, _) = create_link.hashed.into_inner();
             match create_link.link_type.into() {
-                LinkTypes::Fish => todo!(),
-                LinkTypes::Dog => todo!(),
-                LinkTypes::Cow => todo!(),
+                LinkTypes::Fish => Ok(ValidateCallbackResult::Valid),
+                LinkTypes::Dog => Ok(ValidateCallbackResult::Valid),
+                LinkTypes::Cow => Ok(ValidateCallbackResult::Valid),
             }
         }
         Op::RegisterDeleteLink {
             delete_link: _,
             create_link,
         } => match create_link.link_type.into() {
-            LinkTypes::Fish => todo!(),
-            LinkTypes::Dog => todo!(),
-            LinkTypes::Cow => todo!(),
+            LinkTypes::Fish => Ok(ValidateCallbackResult::Valid),
+            LinkTypes::Dog => Ok(ValidateCallbackResult::Valid),
+            LinkTypes::Cow => Ok(ValidateCallbackResult::Valid),
         },
-        Op::RegisterAgentActivity { .. } => todo!(),
+        Op::RegisterAgentActivity { .. } => Ok(ValidateCallbackResult::Valid),
         // Agent joining network validation
         // this is a new DHT op
         // Op::RegisterAgent {
@@ -198,6 +195,6 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         //     Ok(ValidateCallbackResult::Valid)
         // }
         // Chain structure validation
-        // _ => Ok(ValidateCallbackResult::Valid),
+        _ => Ok(ValidateCallbackResult::Valid),
     }
 }
