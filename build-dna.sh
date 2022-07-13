@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -xe
+
 cd dna/zomes/integrity
 cargo build --release --target wasm32-unknown-unknown
 cd ../coordinator
