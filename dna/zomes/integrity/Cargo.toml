@@ -9,5 +9,7 @@ crate-type = ["cdylib", "rlib"]
 name = "integrity"
 
 [dependencies]
-holochain_deterministic_integrity = {version = "0.0.12"}
+# hdk = "=0.0.142"
+# hdk = { path = "../../../../holochain/crates/hdk" }
+hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
 serde = "1"
