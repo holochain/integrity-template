@@ -1,0 +1,13 @@
+[package]
+authors = ["eric@harris-braun.com"]
+edition = "2021"
+name = "integrity"
+version = "0.0.1-alpha1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "integrity"
+
+[dependencies]
+holochain_deterministic_integrity = {version = "0.0.12"}
+serde = "1"
