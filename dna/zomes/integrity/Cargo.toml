@@ -1,0 +1,15 @@
+[package]
+authors = ["eric@harris-braun.com"]
+edition = "2021"
+name = "integrity"
+version = "0.0.1-alpha1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "integrity"
+
+[dependencies]
+# hdk = "=0.0.142"
+# hdk = { path = "../../../../holochain/crates/hdk" }
+hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
+serde = "1"
