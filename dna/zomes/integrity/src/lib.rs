@@ -3,9 +3,10 @@
 use std::hash::Hash;
 
 pub use hdk;
-pub use hdk::hdi;
+pub use hdi;
 
 use hdi::prelude::*;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Entry declarations
@@ -71,7 +72,7 @@ pub fn genesis_self_check(data: GenesisSelfCheckData) -> ExternResult<ValidateCa
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     // TODO: read the holochain_integrity_types docs to understand which ops yield what
-    match op.to_type::<EntryTypes, LinkTypes>().unwrap() {
+    match op.to_type::<_, LinkTypes>()? {
         OpType::StoreRecord(_) => todo!(),
         OpType::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry {

@@ -1,6 +1,6 @@
 ---
 manifest_version: "1"
-name: happ
+name: integrity-template
 description: ~
 roles:
   - id: dna
@@ -8,7 +8,7 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "../dna/dna.dna"
+      bundled: "../dna/integrity-template.dna"
       properties: ~
       uuid: ~
       version: ~

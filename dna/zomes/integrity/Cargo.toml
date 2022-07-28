@@ -9,9 +9,11 @@ crate-type = ["cdylib", "rlib"]
 name = "integrity"
 
 [dependencies]
-# hdk = "=0.0.142"
-# hdk = { path = "../../../../holochain/crates/hdk" }
-hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
+#hdk = "=0.0.142"
+#hdi = "=0.0.14"
+hdk = { path = "../../../../holochain/crates/hdk" }
+hdi = { path = "../../../../holochain/crates/hdi" }
+#hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
 serde = "1"
 
 [dev-dependencies]

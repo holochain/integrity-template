@@ -12,6 +12,9 @@ test("Validate store entry - creating an entry with valid text should succeed", 
     const scenario = new Scenario();
     const player = await scenario.addPlayerWithHapp([{ path: FIXTURE_DNA_URL.pathname }]);
     const actionHash: ActionHash = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "valid text" });
+    console.log( 'integrity create: ' + JSON.stringify( actionHash, null, 4 ))
+
+
     t.equal(actionHash.length, 39, "create entry returns a valid action hash");
     await scenario.cleanUp();
 });
