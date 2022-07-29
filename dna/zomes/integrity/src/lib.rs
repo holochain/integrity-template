@@ -72,8 +72,9 @@ pub fn genesis_self_check(data: GenesisSelfCheckData) -> ExternResult<ValidateCa
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     // TODO: read the holochain_integrity_types docs to understand which ops yield what
+    debug!("Validating integrity-template Op: {:?}", op );
     match op.to_type::<_, LinkTypes>()? {
-        OpType::StoreRecord(_) => todo!(),
+        OpType::StoreRecord(_) => Ok(ValidateCallbackResult::Valid),
         OpType::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry {
                 entry_hash,

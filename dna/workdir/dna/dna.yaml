@@ -6,9 +6,9 @@ integrity:
   properties: ~
   origin_time: 2022-02-11T23:05:19.470323Z
   zomes:
-    - name: integrity
+    - name: integrity-template-integrity-zome
       bundled: ../../../target/wasm32-unknown-unknown/release/integrity.wasm
 coordinator:
   zomes:
-    - name: coordinator
+    - name: integrity-template-coordinator-zome
       bundled: ../../../target/wasm32-unknown-unknown/release/coordinator.wasm

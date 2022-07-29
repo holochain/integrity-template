@@ -51,21 +51,34 @@ $(WASM): FORCE
 .PHONY: test test-all test-unit test-e2e test-dna test-dna-debug test-stress test-sim2h test-node
 test-all:	test
 
-test:		test-unit test-e2e # test-stress # re-enable when Stress tests end reliably
+# test:		test-unit test-e2e # test-stress # re-enable when Stress tests end reliably
 
-test-unit:
-	RUST_BACKTRACE=1 cargo test \
-	    -- --nocapture
+# test-unit:
+# 	RUST_BACKTRACE=1 cargo test \
+# 	    -- --nocapture
 
-test-dna:	$(DNA) FORCE
-	@echo "Starting Scenario tests in $$(pwd)..."; \
-	    ( [ -d  node_modules ] || npm install ) && npm test
+# test-dna:	$(DNA) FORCE
+# 	@echo "Starting Scenario tests in $$(pwd)..."; \
+# 	    ( [ -d  node_modules ] || npm install ) && npm test
 
-test-dna-debug: $(DNA) FORCE
-	@echo "Starting Scenario tests in $$(pwd)..."; \
-	    ( [ -d  node_modules ] || npm install ) && npm run test-debug
+# test-dna-debug: $(DNA) FORCE
+# 	@echo "Starting Scenario tests in $$(pwd)..."; \
+# 	    ( [ -d  node_modules ] || npm install ) && npm run test-debug
 
-test-e2e:	test-dna
+# test-e2e:	test-dna
+
+#
+# Testing
+#
+tests/package-lock.json:	tests/package.json
+	touch $@
+tests/node_modules:		tests/package-lock.json
+	cd tests; npm install
+	touch $@
+test:		$(DNA) tests/node_modules
+	cd tests; npx mocha integration/test_api.js
+test-debug:	$(DNA) tests/node_modules
+	cd tests; LOG_LEVEL=silly npx mocha integration/test_api.js
 
 
 # Generic targets; does not require a Nix environment
