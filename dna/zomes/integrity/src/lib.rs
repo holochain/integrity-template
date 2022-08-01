@@ -6,6 +6,7 @@ pub use hdk;
 pub use hdk::hdi;
 
 use hdi::prelude::*;
+use hdk::prelude::agent_activity;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Entry declarations
@@ -92,9 +93,37 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 Ok(ValidateCallbackResult::Valid)
             }
         },
-        // TODO: show an invalidation use-case or explain why we signal valid by default here
         // this authority has the previous items of the chain. here we introduce rules based on previous actions
-        OpType::RegisterAgentActivity(agent_activity) => Ok(ValidateCallbackResult::Valid),
+        // TODO: show an invalidation use-case or explain why we signal valid by default here
+        // TODO: could all cases marked with 'todo!()' really happen here as well?
+        OpType::RegisterAgentActivity(agent_activity) => {
+            match agent_activity {
+                OpActivity::CreateEntry { .. } => todo!(),
+                OpActivity::CreatePrivateEntry { .. } => todo!(),
+                // Agent joining network validation
+                OpActivity::CreateAgent(agent_pubkey) => {
+                    // we could perform a check on the new agent's pubkey
+                }
+                OpActivity::CreateCapClaim(_) => todo!(),
+                OpActivity::CreateCapGrant(_) => todo!(),
+                OpActivity::UpdateEntry { .. } => todo!(),
+                OpActivity::UpdatePrivateEntry { .. } => todo!(),
+                OpActivity::UpdateAgent { .. } => todo!(),
+                OpActivity::UpdateCapClaim { .. } => todo!(),
+                OpActivity::UpdateCapGrant { .. } => todo!(),
+                OpActivity::DeleteEntry { .. } => todo!(),
+                OpActivity::CreateLink { .. } => todo!(),
+                OpActivity::DeleteLink(_) => todo!(),
+                OpActivity::Dna(_) => todo!(),
+                OpActivity::OpenChain(_) => todo!(),
+                OpActivity::CloseChain(_) => todo!(),
+                OpActivity::AgentValidationPkg(_) => todo!(),
+                OpActivity::InitZomesComplete => todo!(),
+            }
+
+            Ok(ValidateCallbackResult::Valid)
+        }
+
         // Validation for creating links
         OpType::RegisterCreateLink {
             link_type,
@@ -165,21 +194,4 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             "deleting entries isn't valid".to_string(),
         )),
     }
-
-    /*
-    // TODO: port these
-    match op {
-        // Agent joining network validation
-        // this is a new DHT op
-        // Op::RegisterAgent {
-        //     action,
-        //     agent_pub_key,
-        // } => {
-        //     // get validation package and then do stuff
-        //     Ok(ValidateCallbackResult::Valid)
-        // }
-        // Chain structure validation
-        _ => Ok(ValidateCallbackResult::Valid),
-    }
-    */
 }
