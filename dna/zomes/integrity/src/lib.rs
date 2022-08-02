@@ -6,7 +6,6 @@ pub use hdk;
 pub use hdk::hdi;
 
 use hdi::prelude::*;
-use hdk::prelude::agent_activity;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Entry declarations
