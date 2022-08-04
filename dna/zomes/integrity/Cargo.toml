@@ -11,14 +11,15 @@ name = "integrity"
 [dependencies]
 #hdk = "=0.0.142"
 #hdi = "=0.0.14"
-hdk = { path = "../../../../holochain/crates/hdk" }
-hdi = { path = "../../../../holochain/crates/hdi" }
-#hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
+#hdk = { path = "../../../../holochain/crates/hdk" }
+#hdi = { path = "../../../../holochain/crates/hdi" }
+hdk = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn"}
+hdi = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn"}
 serde = "1"
 
 [dev-dependencies]
 # holochain = { version = "0.0.114", default-features = false, features = ["test_utils"] }
-holochain = { git = "https://github.com/holochain/holochain", branch = "develop", default-features = false, features = ["test_utils"]}
+holochain = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn", default-features = false, features = ["test_utils"]}
 tokio = { version = "1.20.1", features = ["full"] }
 futures = { version = "0.3.21", default-features = false }
 

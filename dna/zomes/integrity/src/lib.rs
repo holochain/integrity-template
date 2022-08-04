@@ -73,7 +73,7 @@ pub fn genesis_self_check(data: GenesisSelfCheckData) -> ExternResult<ValidateCa
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     // TODO: read the holochain_integrity_types docs to understand which ops yield what
     debug!("Validating integrity-template Op: {:?}", op );
-    match op.to_type::<_, LinkTypes>()? {
+    match op.to_type::<EntryTypes, LinkTypes>()? {
         OpType::StoreRecord(_) => Ok(ValidateCallbackResult::Valid),
         OpType::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry {
@@ -94,32 +94,38 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 Ok(ValidateCallbackResult::Valid)
             }
         },
-        // this authority has the previous items of the chain. here we introduce rules based on previous actions
+        // this authority has the previous items of the chain. here we introduce rules based on
+        // previous actions, with local (immediate) access to the source-chain.
         // TODO: show an invalidation use-case or explain why we signal valid by default here
         // TODO: could all cases marked with 'todo!()' really happen here as well?
         OpType::RegisterAgentActivity(agent_activity) => {
+	    debug!("- Agent Activity: {:?}", agent_activity );
             match agent_activity {
-                OpActivity::CreateEntry { .. } => todo!(),
-                OpActivity::CreatePrivateEntry { .. } => todo!(),
                 // Agent joining network validation
+                OpActivity::AgentValidationPkg(_) => todo!(),
+                OpActivity::CloseChain(_) => todo!(),
                 OpActivity::CreateAgent(agent_pubkey) => {
                     // we could perform a check on the new agent's pubkey
                 }
                 OpActivity::CreateCapClaim(_) => todo!(),
                 OpActivity::CreateCapGrant(_) => todo!(),
-                OpActivity::UpdateEntry { .. } => todo!(),
-                OpActivity::UpdatePrivateEntry { .. } => todo!(),
+                OpActivity::CreateEntry{ entry_hash, entry_type } => {
+		    // We can check the created entry
+		},
+                OpActivity::CreatePrivateEntry { .. } => todo!(),
+                OpActivity::CreateLink { .. } => todo!(),
+                OpActivity::DeleteEntry { .. } => todo!(),
+                OpActivity::DeleteLink(_) => todo!(),
+                OpActivity::Dna(_) => todo!(),
+                OpActivity::InitZomesComplete => {
+                    // we could perform an integrity check on the Zome genesis
+                },
+                OpActivity::OpenChain(_) => todo!(),
                 OpActivity::UpdateAgent { .. } => todo!(),
                 OpActivity::UpdateCapClaim { .. } => todo!(),
                 OpActivity::UpdateCapGrant { .. } => todo!(),
-                OpActivity::DeleteEntry { .. } => todo!(),
-                OpActivity::CreateLink { .. } => todo!(),
-                OpActivity::DeleteLink(_) => todo!(),
-                OpActivity::Dna(_) => todo!(),
-                OpActivity::OpenChain(_) => todo!(),
-                OpActivity::CloseChain(_) => todo!(),
-                OpActivity::AgentValidationPkg(_) => todo!(),
-                OpActivity::InitZomesComplete => todo!(),
+                OpActivity::UpdateEntry { .. } => todo!(),
+                OpActivity::UpdatePrivateEntry { .. } => todo!(),
             }
 
             Ok(ValidateCallbackResult::Valid)

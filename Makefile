@@ -48,36 +48,41 @@ $(WASM): FORCE
 	    --release --target wasm32-unknown-unknown
 
 
-.PHONY: test test-all test-unit test-e2e test-dna test-dna-debug test-stress test-sim2h test-node
-test-all:	test
-
-# test:		test-unit test-e2e # test-stress # re-enable when Stress tests end reliably
-
-# test-unit:
-# 	RUST_BACKTRACE=1 cargo test \
-# 	    -- --nocapture
-
-# test-dna:	$(DNA) FORCE
-# 	@echo "Starting Scenario tests in $$(pwd)..."; \
-# 	    ( [ -d  node_modules ] || npm install ) && npm test
-
-# test-dna-debug: $(DNA) FORCE
-# 	@echo "Starting Scenario tests in $$(pwd)..."; \
-# 	    ( [ -d  node_modules ] || npm install ) && npm run test-debug
-
-# test-e2e:	test-dna
-
 #
-# Testing
+# Testing.  Requires a Nix environment, ie: make nix-test-debug
 #
+.PHONY: test test-debug test-unit test-old test-old-debug test-dna test-dna-debug
+
+test:		test-unit test-dna # test-stress # re-enable when Stress tests end reliably
+
+test-debug:	test-unit test-dna-debug
+
+test-unit:	FORCE
+	RUST_BACKTRACE=1 cargo test \
+	    -- --nocapture
+#
+# These @old holochain/tryorama tests don't seem to work...  Use @whi/holochain-backdrop
+# 
+
+test-old:	$(DNA) FORCE
+	@echo "Starting Scenario tests in $$(pwd)..."; \
+	    ( [ -d  node_modules ] || npm install ) && npm test
+
+test-old-debug: $(DNA) FORCE
+	@echo "Starting Scenario tests in $$(pwd)..."; \
+	    ( [ -d  node_modules ] || npm install ) && npm run test-debug
+
 tests/package-lock.json:	tests/package.json
 	touch $@
+
 tests/node_modules:		tests/package-lock.json
 	cd tests; npm install
 	touch $@
-test:		$(DNA) tests/node_modules
+
+test-dna:	$(DNA) tests/node_modules FORCE
 	cd tests; npx mocha integration/test_api.js
-test-debug:	$(DNA) tests/node_modules
+
+test-dna-debug:	$(DNA) tests/node_modules FORCE
 	cd tests; LOG_LEVEL=silly npx mocha integration/test_api.js
 
 
