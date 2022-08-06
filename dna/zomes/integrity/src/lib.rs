@@ -109,8 +109,10 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 }
                 OpActivity::CreateCapClaim(_) => todo!(),
                 OpActivity::CreateCapGrant(_) => todo!(),
-                OpActivity::CreateEntry{ entry_hash, entry_type } => {
-		    // We can check the created entry
+                OpActivity::CreateEntry{ entry_hash, entry_type } => match entry_type {
+		    // We can check the created entry's type number
+		    Some(UnitEntryTypes::MyThing1) => (),
+		    _ => return Ok(ValidateCallbackResult::Invalid(format!("unknown entry type {:?}", entry_type ))),
 		},
                 OpActivity::CreatePrivateEntry { .. } => todo!(),
                 OpActivity::CreateLink { .. } => todo!(),
