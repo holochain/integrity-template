@@ -10,13 +10,15 @@ name = "integrity"
 
 [dependencies]
 # hdk = "=0.0.145"
-hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
-# hdk = { path = "../../../../holochain/crates/hdk" }
+# hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
+hdk = { path = "../../../../holochain/crates/hdk" }
 serde = "1"
 
 [dev-dependencies]
 # holochain = { version = "0.0.154", default-features = false, features = ["test_utils"] }
 holochain = { git = "https://github.com/holochain/holochain", branch = "develop", default-features = false, features = ["test_utils"]}
+# hdk = { git = "https://github.com/holochain/holochain", branch = "develop", features = ["mock", "test_utils"]}
+hdk = { path = "../../../../holochain/crates/hdk", features = ["mock", "test_utils"] }
 tokio = { version = "1.20.1", features = ["full"] }
 futures = { version = "0.3.21", default-features = false }
 
