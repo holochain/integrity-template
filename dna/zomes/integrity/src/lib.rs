@@ -1,4 +1,4 @@
-#![allow(unused_variables)]
+#![allow(unused_variables, unused_imports)]
 
 use std::hash::Hash;
 
@@ -19,8 +19,9 @@ use hdi::prelude::*;
 ////////////////////////////////////////////////////////////////////////////////
 
 #[hdk_entry_helper]
+#[derive(Clone)]
 pub struct MyThing {
-    pub thing1: String,
+    pub thing: String,
 }
 
 impl MyThing {
@@ -28,14 +29,16 @@ impl MyThing {
 }
 
 #[hdk_entry_helper]
+#[derive(Clone)]
 pub struct MyThingPrivate {
     pub private_thing: String,
 }
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
+#[derive(Clone)]
 pub enum EntryTypes {
-    MyThing1(MyThing),
+    MyThing(MyThing),
     #[entry_def(visibility = "private")]
     MyThingPrivate(MyThingPrivate),
 }
@@ -69,10 +72,20 @@ pub fn genesis_self_check(data: GenesisSelfCheckData) -> ExternResult<ValidateCa
 ////////////////////////////////////////////////////////////////////////////////
 
 #[hdk_extern]
+/// Cases that are covered by the subconscious validation and don't need to be handled here
+/// todo: understand and document guarantees
+///
+///     - hashes and signatures will be checked where the host knows about it
+///     - validation is deterministic
+///     - errors and timeouts on the host that can be caught and handled unambiguously will be
+///
+///     - all functions that are callable are deterministic (todo: which ones can be called?)
+///     - must_get_entry / must_get_header will either return a result or the wasm call stops entirely
+///     - example: wasm that only does introspection on the wasm itself
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     // TODO: read the holochain_integrity_types docs to understand which ops yield what
     match op.to_type::<EntryTypes, LinkTypes>().unwrap() {
-        OpType::StoreRecord(_) => todo!(),
+        OpType::StoreRecord(_store_record) => todo!(),
         OpType::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry {
                 entry_hash,
@@ -82,12 +95,18 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 entry_hash,
                 entry_type,
                 ..
-            } => match entry_type {
-                EntryTypes::MyThing1(my_thing1) if my_thing1.thing1 == "invalid text 1" => Ok(
-                    ValidateCallbackResult::Invalid("invalid thing1".to_string()),
-                ),
-                _ => Ok(ValidateCallbackResult::Valid),
-            },
+            } => {
+                // do something with the hash
+                let entry = must_get_entry(entry_hash)?;
+
+                match entry_type {
+                    EntryTypes::MyThing(my_thing) if my_thing.thing == "invalid text" => {
+                        Ok(ValidateCallbackResult::Invalid(my_thing.thing))
+                    }
+                    _ => Ok(ValidateCallbackResult::Valid),
+                }
+            }
+
             OpEntry::CreateAgent(_) | OpEntry::UpdateAgent { .. } => {
                 Ok(ValidateCallbackResult::Valid)
             }
@@ -160,9 +179,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 original_entry_type,
                 new_entry_type,
             } => match new_entry_type {
-                EntryTypes::MyThing1(my_thing1) if my_thing1.thing1 == "invalid text 1" => Ok(
-                    ValidateCallbackResult::Invalid("invalid thing1".to_string()),
-                ),
+                EntryTypes::MyThing(my_thing) if my_thing.thing == "invalid text" => {
+                    Ok(ValidateCallbackResult::Invalid("invalid thing".to_string()))
+                }
                 _ => Ok(ValidateCallbackResult::Valid),
             },
             OpUpdate::PrivateEntry {
@@ -192,5 +211,88 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         OpType::RegisterDelete(_) => Ok(ValidateCallbackResult::Invalid(
             "deleting entries isn't valid".to_string(),
         )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use hdk::hdi;
+
+    use hdi::test_utils::short_hand;
+    use hdk::prelude::{holo_hash::HashableContent, HoloHash, MockHdkT};
+
+    #[test]
+    fn invalid_entry() {
+        // let mut mock_hdk = MockHdkT::new();
+
+        // todo: provoke the invalid response for this match arm
+
+        // OpType::StoreEntry(store_entry) => match store_entry {
+        //     OpEntry::CreateEntry {
+        //         entry_hash,
+        //         entry_type,
+        //     }
+        //     | OpEntry::UpdateEntry {
+        //         entry_hash,
+        //         entry_type,
+        //         ..
+        //     } => match entry_type {
+        //         EntryTypes::MyThing(my_thing) if my_thing1.thing1 == "invalid text 1" => Ok(
+        //             ValidateCallbackResult::Invalid("invalid thing1".to_string()),
+        //         ),
+        //         _ => Ok(ValidateCallbackResult::Valid),
+        //     },
+        //     OpEntry::CreateAgent(_) | OpEntry::UpdateAgent { .. } => {
+        //         Ok(ValidateCallbackResult::Valid)
+        //     }
+        // },
+
+        // todo: invalid create entry
+        // todo: invalid update entry
+
+        // mocking the HDK is only required when the validate function itself has calls like `must_get` that could potentially return arbitrary responses
+        /*
+        mock_hdk.expect_create().return_once(|_input| {
+            let entry = crate::EntryTypes::MyThing(crate::MyThing {
+                thing: "invalid text".to_string(),
+            });
+
+            Ok(entry)
+        });
+
+        hdk::prelude::set_hdk(mock_hdk);
+
+         */
+
+        let e = crate::MyThing {
+            thing: "invalid text".to_string(),
+        };
+
+        let et = crate::EntryTypes::MyThing(e.clone());
+
+        let invalid_entry = hdk::prelude::OpEntry::CreateEntry {
+            // todo: how can i hash the actual entry?
+            entry_hash: short_hand::eh(0),
+            entry_type: et,
+        };
+
+        let op = short_hand::s_entry(
+            short_hand::c(hdk::prelude::EntryType::App(hdk::prelude::AppEntryType {
+                // todo: can and should this be derived from the data?
+                id: 0.into(),
+                // todo: can and should this be derived from the data?
+                zome_id: 0.into(),
+                visibility: hdk::prelude::EntryVisibility::Public,
+            }))
+            .into(),
+            short_hand::e(e),
+        );
+
+        // todo: set a mocked hdi for unit testing
+        let mut mock_hdi = MockHdiT::new();
+        mock_hdi.expect_foo().times(1).etc().etc();
+        set_hdi(mock_hdi);
+
+        let err = super::validate(op).expect_err("invalid entry should cause an error");
     }
 }
