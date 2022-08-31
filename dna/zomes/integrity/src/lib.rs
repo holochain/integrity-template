@@ -97,7 +97,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 ..
             } => {
                 // do something with the hash
-                let entry = must_get_entry(entry_hash)?;
+                // match hdk::prelude::must_get_entry(entry_hash)? {
+                //     hdk::prelude::Entry::Agent(_) => todo!(),
+                //     hdk::prelude::Entry::App(_) => todo!(),
+                //     hdk::prelude::Entry::CounterSign(_, _) => todo!(),
+                //     hdk::prelude::Entry::CapClaim(_) => todo!(),
+                //     hdk::prelude::Entry::CapGrant(_) => todo!(),
+                // };
 
                 match entry_type {
                     EntryTypes::MyThing(my_thing) if my_thing.thing == "invalid text" => {
@@ -115,29 +121,29 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         // TODO: show an invalidation use-case or explain why we signal valid by default here
         // TODO: could all cases marked with 'todo!()' really happen here as well?
         OpType::RegisterAgentActivity(agent_activity) => {
-            match agent_activity {
-                OpActivity::CreateEntry { .. } => todo!(),
-                OpActivity::CreatePrivateEntry { .. } => todo!(),
-                // Agent joining network validation
-                OpActivity::CreateAgent(agent_pubkey) => {
-                    // we could perform a check on the new agent's pubkey
-                }
-                OpActivity::CreateCapClaim(_) => todo!(),
-                OpActivity::CreateCapGrant(_) => todo!(),
-                OpActivity::UpdateEntry { .. } => todo!(),
-                OpActivity::UpdatePrivateEntry { .. } => todo!(),
-                OpActivity::UpdateAgent { .. } => todo!(),
-                OpActivity::UpdateCapClaim { .. } => todo!(),
-                OpActivity::UpdateCapGrant { .. } => todo!(),
-                OpActivity::DeleteEntry { .. } => todo!(),
-                OpActivity::CreateLink { .. } => todo!(),
-                OpActivity::DeleteLink(_) => todo!(),
-                OpActivity::Dna(_) => todo!(),
-                OpActivity::OpenChain(_) => todo!(),
-                OpActivity::CloseChain(_) => todo!(),
-                OpActivity::AgentValidationPkg(_) => todo!(),
-                OpActivity::InitZomesComplete => todo!(),
-            }
+            // match agent_activity {
+            //     OpActivity::CreateEntry { .. } => todo!(),
+            //     OpActivity::CreatePrivateEntry { .. } => todo!(),
+            //     // Agent joining network validation
+            //     OpActivity::CreateAgent(agent_pubkey) => {
+            //         // we could perform a check on the new agent's pubkey
+            //     }
+            //     OpActivity::CreateCapClaim(_) => todo!(),
+            //     OpActivity::CreateCapGrant(_) => todo!(),
+            //     OpActivity::UpdateEntry { .. } => todo!(),
+            //     OpActivity::UpdatePrivateEntry { .. } => todo!(),
+            //     OpActivity::UpdateAgent { .. } => todo!(),
+            //     OpActivity::UpdateCapClaim { .. } => todo!(),
+            //     OpActivity::UpdateCapGrant { .. } => todo!(),
+            //     OpActivity::DeleteEntry { .. } => todo!(),
+            //     OpActivity::CreateLink { .. } => todo!(),
+            //     OpActivity::DeleteLink(_) => todo!(),
+            //     OpActivity::Dna(_) => todo!(),
+            //     OpActivity::OpenChain(_) => todo!(),
+            //     OpActivity::CloseChain(_) => todo!(),
+            //     OpActivity::AgentValidationPkg(_) => todo!(),
+            //     OpActivity::InitZomesComplete => todo!(),
+            // }
 
             Ok(ValidateCallbackResult::Valid)
         }
@@ -216,10 +222,14 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
 
 #[cfg(test)]
 mod tests {
-    use hdk::hdi;
-
     use hdi::test_utils::short_hand;
+    use hdk::prelude::OpEntry;
     use hdk::prelude::{holo_hash::HashableContent, HoloHash, MockHdkT};
+    use hdk::{
+        hdi::{self, prelude::set_hdi},
+        prelude::{AppEntryType, EntryType, EntryVisibility, ValidateCallbackResult},
+    };
+    use holochain_mock_hdi::MockHdiT;
 
     #[test]
     fn invalid_entry() {
@@ -247,52 +257,73 @@ mod tests {
         //     }
         // },
 
-        // todo: invalid create entry
         // todo: invalid update entry
 
-        // mocking the HDK is only required when the validate function itself has calls like `must_get` that could potentially return arbitrary responses
-        /*
-        mock_hdk.expect_create().return_once(|_input| {
-            let entry = crate::EntryTypes::MyThing(crate::MyThing {
-                thing: "invalid text".to_string(),
-            });
-
-            Ok(entry)
-        });
-
-        hdk::prelude::set_hdk(mock_hdk);
-
-         */
-
+        // invalid create entry
         let e = crate::MyThing {
             thing: "invalid text".to_string(),
         };
 
         let et = crate::EntryTypes::MyThing(e.clone());
 
-        let invalid_entry = hdk::prelude::OpEntry::CreateEntry {
+        let invalid_entry = OpEntry::CreateEntry {
             // todo: how can i hash the actual entry?
             entry_hash: short_hand::eh(0),
             entry_type: et,
         };
 
         let op = short_hand::s_entry(
-            short_hand::c(hdk::prelude::EntryType::App(hdk::prelude::AppEntryType {
+            short_hand::c(EntryType::App(AppEntryType {
                 // todo: can and should this be derived from the data?
                 id: 0.into(),
                 // todo: can and should this be derived from the data?
                 zome_id: 0.into(),
-                visibility: hdk::prelude::EntryVisibility::Public,
+                visibility: EntryVisibility::Public,
             }))
             .into(),
             short_hand::e(e),
         );
 
-        // todo: set a mocked hdi for unit testing
+        // construct a mocked hdi for unit testing
+        // this should evolve with the `validate` function
         let mut mock_hdi = MockHdiT::new();
-        mock_hdi.expect_foo().times(1).etc().etc();
+        mock_hdi.expect_zome_info().return_once({
+            // TODO: customise this for the happ?
+            move |_input| {
+                let zome_types = hdi::prelude::ScopedZomeTypesSet {
+                    entries: Default::default(),
+                    // entries: hdi::prelude::ScopedZomeTypes(
+                    //     [(0, 0)]
+                    //         .iter()
+                    //         .map(|(z, types)| {
+                    //             (
+                    //                 hdi::prelude::ZomeId(*z),
+                    //                 (0..*types)
+                    //                     .map(|t| hdi::prelude::EntryDefIndex(t))
+                    //                     .collect(),
+                    //             )
+                    //         })
+                    //         .collect(),
+                    // ),
+                    links: Default::default(),
+                };
+
+                Ok(hdi::prelude::ZomeInfo {
+                    name: "integrity".to_string().into(),
+                    id: 0.into(),
+                    properties: hdi::prelude::UnsafeBytes::from(vec![]).into(),
+                    entry_defs: hdi::prelude::EntryDefs(Default::default()),
+                    extern_fns: vec![],
+                    zome_types,
+                })
+            }
+        });
+
         set_hdi(mock_hdi);
 
-        let err = super::validate(op).expect_err("invalid entry should cause an error");
+        match super::validate(op) {
+            Ok(ValidateCallbackResult::Invalid(_)) => (),
+            other => panic!("invalid entry should cause an error: {:?}", other),
+        };
     }
 }
