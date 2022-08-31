@@ -1,6 +1,7 @@
 let
   holonixPath = (import ./nix/sources.nix).holonix;
   holonix = import (holonixPath) {
+    rustVersion = { version = "1.63.0"; };
     holochainVersionId = "main";
     include = {
       node = false;
