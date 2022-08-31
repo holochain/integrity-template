@@ -1,5 +1,5 @@
 [package]
-authors = ["eric@harris-braun.com"]
+authors = [ "Holochain Core Dev Team <devcore@holochain.org>" ]
 edition = "2021"
 name = "integrity"
 version = "0.0.1-alpha.1"
@@ -9,16 +9,28 @@ crate-type = ["cdylib", "rlib"]
 name = "integrity"
 
 [dependencies]
-# hdk = "=0.0.145"
-# hdk = { git = "https://github.com/holochain/holochain", branch = "develop"}
-hdk = { path = "../../../../holochain/crates/hdk" }
 serde = "1"
 
+[dependencies.hdk]
+default-features = false
+# version = "=0.0.147"
+git = "https://github.com/holochain/holochain"
+branch = "pr-hdi-testing"
+# path = "../../../../holochain/crates/hdk"
+
 [dev-dependencies]
-# holochain = { version = "0.0.154", default-features = false, features = ["test_utils"] }
-holochain = { git = "https://github.com/holochain/holochain", branch = "develop", default-features = false, features = ["test_utils"]}
-# hdk = { git = "https://github.com/holochain/holochain", branch = "develop", features = ["mock", "test_utils"]}
-hdk = { path = "../../../../holochain/crates/hdk", features = ["mock", "test_utils"] }
 tokio = { version = "1.20.1", features = ["full"] }
 futures = { version = "0.3.21", default-features = false }
 
+[dev-dependencies.holochain_mock_hdi]
+# version = "1"
+git = "https://github.com/holochain/holochain"
+branch = "pr-hdi-testing"
+# path = "../../../../holochain/crates/mock_hdi"
+
+[dev-dependencies.hdk]
+features = ["mock", "test_utils"]
+# version = "=0.0.147"
+git = "https://github.com/holochain/holochain"
+branch = "pr-hdi-testing"
+# path = "../../../../holochain/crates/hdk"
