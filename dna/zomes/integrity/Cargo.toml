@@ -9,17 +9,18 @@ crate-type = ["cdylib", "rlib"]
 name = "integrity"
 
 [dependencies]
-#hdk = "=0.0.142"
-#hdi = "=0.0.14"
+hdk = "=0.0.148"
+hdi = "=0.0.20"
 #hdk = { path = "../../../../holochain/crates/hdk" }
 #hdi = { path = "../../../../holochain/crates/hdi" }
-hdk = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn"}
-hdi = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn"}
 serde = "1"
 
 [dev-dependencies]
+holochain = { version = "0.0.158", default-features = false, features = ["test_utils"] }
+holochain_types = "0.0.53"
+holochain_integrity_types = "0.0.16"
 # holochain = { version = "0.0.114", default-features = false, features = ["test_utils"] }
-holochain = { git = "https://github.com/pjkundert/holochain", branch = "must-get-agent-activity-host-fn", default-features = false, features = ["test_utils"]}
+# holochain = { git = "https://github.com/holochain/holochain", rev = "6e2eeeceab49e1a6331549c0483971ef08c21f70", default-features = false, features = ["test_utils"]}
 tokio = { version = "1.20.1", features = ["full"] }
 futures = { version = "0.3.21", default-features = false }
 
