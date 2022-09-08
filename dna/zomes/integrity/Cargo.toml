@@ -12,9 +12,8 @@ name = "integrity"
 hdi = "=0.0.20"
 hdk = "=0.0.148"
 serde = "*"  # use whatever serde hdk gives us
-#holochain_serialized_bytes = "=0.0.51"
-# thiserror = "1"
-holochain_mock_hdi = { path = "../../../../holochain/crates/mock_hdi", version = "0.0.1", optional = true }
+thiserror = "1"
+#holochain_mock_hdi = { path = "../../../../holochain/crates/mock_hdi", version = "0.0.1", optional = true }
 
 [dev-dependencies]
 # tokio = { version = "1.20.1", features = ["full"] }
@@ -37,4 +36,4 @@ hdk = { version = "=0.0.148", features = ["mock"] }
 [features]
 #default = []
 #mock = ["holochain_mock_hdi"]
-mock = ["hdk/mock", "hdk/test_utils", "hdi/test_utils", "holochain_mock_hdi"]
+mock = ["hdk/mock", "hdk/test_utils", "hdi/test_utils"]

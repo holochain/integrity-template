@@ -64,13 +64,14 @@ target/wasm32-unknown-unknown/release/%.wasm:	Makefile dna/zomes/%/src/*.rs dna/
 #
 .PHONY: test test-debug test-unit test-old test-old-debug test-dna test-dna-debug
 
-test:		test-unit test-dna # test-stress # re-enable when Stress tests end reliably
+test:		test-dna	test-unit
 
-test-debug:	test-unit test-dna-debug
+test-debug:	test-dna-debug	test-unit
 
 test-unit:	FORCE
 	RUST_BACKTRACE=1 cargo test \
-	    -- --nocapture
+	    --lib --features="mock" \
+		-- --nocapture
 
 unit-%:
 	RUST_BACKTRACE=1 cargo test $* \
