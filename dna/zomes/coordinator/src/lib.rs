@@ -3,8 +3,8 @@ use integrity::{EntryTypes, MyThing};
 
 #[hdk_extern]
 pub fn create(content: String) -> ExternResult<ActionHash> {
-    let action_hash = create_entry(EntryTypes::MyThing1(MyThing {
-        thing1: content.clone(),
+    let action_hash = create_entry(EntryTypes::MyThing(MyThing {
+        thing: content.clone(),
     }))?;
     Ok(action_hash)
 }
@@ -12,8 +12,8 @@ pub fn create(content: String) -> ExternResult<ActionHash> {
 pub fn update(entry_hash: ActionHash, content: String) -> ExternResult<ActionHash> {
     let action_hash = update_entry(
         entry_hash,
-        EntryTypes::MyThing1(MyThing {
-            thing1: content.clone(),
+        EntryTypes::MyThing(MyThing {
+            thing: content.clone(),
         }),
     )?;
     Ok(action_hash)

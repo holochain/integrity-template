@@ -23,12 +23,12 @@ test("Validate store entry - creating an entry with invalid text should fail", a
     const scenario = new Scenario();
     try {
         const player = await scenario.addPlayerWithHapp([{ path: FIXTURE_DNA_URL.pathname }]);
-        const l = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "invalid text 1" });
+        const l = await player.cells[0].callZome({ zome_name: "coordinator", fn_name: "create", payload: "invalid text" });
         console.log('e', l);
         t.fail();
     } catch (e) {
         const hcError = e as HolochainError;
-        t.ok(hcError.data.data.includes("invalid thing1"));
+        t.ok(hcError.data.data.includes("invalid thing"));
     }
     await scenario.cleanUp();
 });

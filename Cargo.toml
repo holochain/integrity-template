@@ -1,8 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-  "dna/zomes/coordinator",
   "dna/zomes/integrity",
+  "dna/zomes/coordinator",
 ]
 
 [profile.dev]

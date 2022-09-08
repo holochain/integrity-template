@@ -23,17 +23,19 @@ nix-%:
 # Internal targets; require a Nix environment in order to be deterministic.
 # - Uses the version of `hc` on the system PATH.
 # - Normally called from within a Nix environment, eg. run `nix-shell`
-.PHONY:		rebuild install build
+.PHONY:		rebuild build happ dna wasm
 rebuild:	clean build
 
-install:	build
+build:		happ
 
-build:		$(HAPP)
+happ:		$(HAPP)
 
 $(HAPP):	$(DNA)
 	@echo "Packaging HAPP:"
 	@hc app pack dna/workdir/happ
 	@ls -l $@
+
+dna:		$(DNA)
 
 # Package the DNA from the built target release WASM
 $(DNA):		$(WASM) FORCE
@@ -42,11 +44,20 @@ $(DNA):		$(WASM) FORCE
 	@ls -l $@
 
 # Recompile the target release WASM
-$(WASM): FORCE
-	@echo "Building  DNA WASM:"
-	@RUST_BACKTRACE=1 CARGO_TARGET_DIR=target cargo build \
-	    --release --target wasm32-unknown-unknown
+# $(WASM): FORCE
+# 	@echo "Building  DNA WASM:"
+# 	@RUST_BACKTRACE=1 CARGO_TARGET_DIR=target cargo build \
+# 	    --release --target wasm32-unknown-unknown
 
+wasm:		$(WASM)
+
+target/wasm32-unknown-unknown/release/%.wasm:	Makefile dna/zomes/%/src/*.rs dna/zomes/%/Cargo.toml
+	@echo "Building  '$*' WASM: $@"; \
+	RUST_BACKTRACE=1 CARGO_TARGET_DIR=target cargo build \
+	    --release \
+	    --target wasm32-unknown-unknown \
+	    --package $*
+	@touch $@ # Cargo must have a cache somewhere because it doesn't update the file time
 
 #
 # Testing.  Requires a Nix environment, ie: make nix-test-debug
@@ -59,6 +70,10 @@ test-debug:	test-unit test-dna-debug
 
 test-unit:	FORCE
 	RUST_BACKTRACE=1 cargo test \
+	    -- --nocapture
+
+unit-%:
+	RUST_BACKTRACE=1 cargo test $* \
 	    -- --nocapture
 #
 # These @old holochain/tryorama tests don't seem to work...  Use @whi/holochain-backdrop
@@ -94,4 +109,6 @@ clean:
 	    tests/node_modules \
 	    .cargo \
 	    target \
-	    Cargo.lock
+	    Cargo.lock \
+	    $(HAPP) \
+	    $(DNA)

@@ -15,3 +15,5 @@ dna/workdir/happ/*.happ
 workdir/*.webhapp
 *.tsbuildinfo
 .running
+integrity.dna
+integrity.happ

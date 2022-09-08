@@ -40,8 +40,8 @@ function errors_tests () {
         this.timeout( 10_000 )
 
         await expect_reject( async () => {
-            await clients.alice.call( "integrity-template-dna", "integrity-template-coordinator-zome", "create", "invalid text 1" );
-        }, ConductorError, "Source chain error: InvalidCommit error: invalid thing1" );
+            await clients.alice.call( "integrity-template-dna", "integrity-template-coordinator-zome", "create", "invalid text" );
+        }, ConductorError, "Source chain error: InvalidCommit error: invalid text" );
     });
 }
 
