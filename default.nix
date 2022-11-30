@@ -1,7 +1,10 @@
 let
   holonixPath = (import ./nix/sources.nix).holonix;
   holonix = import (holonixPath) {
-    rustVersion = { version = "1.63.0"; };
+    rustVersion = { 
+      track = "stable";
+      version = "1.64.0"; 
+    };
     holochainVersionId = "main";
     include = {
       node = false;
@@ -16,6 +19,7 @@ in
 nixpkgs.mkShell {
   inputsFrom = [ holonix.main ];
   packages = with nixpkgs; [
+    niv
     nodejs-16_x
     sqlite
   ];
