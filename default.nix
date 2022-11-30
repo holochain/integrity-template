@@ -5,7 +5,7 @@ let
       track = "stable";
       version = "1.64.0"; 
     };
-    holochainVersionId = "v0_0_174";
+    holochainVersionId = "v0_0_175";
     include = {
       node = false;
       happ = false;
